@@ -1,5 +1,5 @@
 const VALID_API_KEY = 'virajdeveloper';
-const VALID_API_TOKEN = 'VJ2026SECURE'; // 12-char secret token
+const VALID_API_TOKEN = 'VJ2026SECURE';
 
 const DEV_SIGNATURE = {
     developer: "Viraj_Prajapati 👑",
