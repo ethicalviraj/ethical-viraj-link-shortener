@@ -1,5 +1,5 @@
 const API_KEY = 'virajdeveloper';
-const API_TOKEN = 'VJ2026SECURE';
+const API_TOKEN = 'VJ2026SECURE'; // Make sure this matches exactly
 const API_ENDPOINT = '/api/shorten';
 
 const hamburger = document.getElementById('hamburger');
@@ -38,6 +38,7 @@ async function shortenUrl() {
     try { new URL(url); }
     catch { showResult('Invalid URL. Please enter a valid http:// or https:// link.', 'error'); return; }
 
+    // UI Loading State
     shortenBtn.disabled = true;
     shortenBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Shortening...</span>';
     result.classList.remove('show');
@@ -46,6 +47,23 @@ async function shortenUrl() {
         const res = await fetch(
             `${API_ENDPOINT}?url=${encodeURIComponent(url)}&apikey=${API_KEY}&token=${API_TOKEN}`
         );
+
+        // Check if response is OK
+        if (!res.ok) {
+            // Try to parse JSON error response, fallback to generic error
+            let errorMsg = `Server error (${res.status})`;
+            try {
+                const errData = await res.json();
+                if (errData.error) errorMsg = errData.error;
+            } catch (e) {
+                // Response wasn't JSON (maybe HTML 404 page)
+                if (res.status === 404) {
+                    errorMsg = 'API endpoint not found. Please check your vercel.json configuration.';
+                }
+            }
+            throw new Error(errorMsg);
+        }
+
         const data = await res.json();
 
         if (data.success && data.shortUrl) {
@@ -54,7 +72,8 @@ async function shortenUrl() {
             showResult(data.error || 'Something went wrong. Please try again.', 'error');
         }
     } catch (err) {
-        showResult('Network error. Please try again.', 'error');
+        // Show the actual error message
+        showResult(err.message || 'Network error. Please try again.', 'error');
     } finally {
         shortenBtn.disabled = false;
         shortenBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Shorten</span>';
