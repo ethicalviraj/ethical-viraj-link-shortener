@@ -1,5 +1,5 @@
 const VALID_API_KEY = 'virajdeveloper';
-const VALID_API_TOKEN = 'VJ2026SECURE';
+const VALID_API_TOKEN = 'VJ2026SECURE'; // 12-char token (V J 2 0 2 6 S E C U R E)
 
 const DEV_SIGNATURE = {
     developer: "Viraj_Prajapati 👑",
@@ -17,6 +17,7 @@ function isValidUrl(string) {
     }
 }
 
+// Provider 1: is.gd
 async function shortenWithIsGd(longUrl) {
     const apiUrl = `https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`;
     const response = await fetch(apiUrl, {
@@ -24,10 +25,11 @@ async function shortenWithIsGd(longUrl) {
     });
     const data = await response.json();
     if (data.errorcode) throw new Error(data.errormessage);
-    if (!data.shorturl) throw new Error('No URL returned');
+    if (!data.shorturl) throw new Error('No URL returned from is.gd');
     return data.shorturl;
 }
 
+// Provider 2: TinyURL
 async function shortenWithTinyUrl(longUrl) {
     const apiUrl = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`;
     const response = await fetch(apiUrl, {
@@ -38,6 +40,7 @@ async function shortenWithTinyUrl(longUrl) {
     return text.trim();
 }
 
+// Provider 3: CleanURI
 async function shortenWithCleanUri(longUrl) {
     const response = await fetch('https://cleanuri.com/api/v1/shorten', {
         method: 'POST',
@@ -49,17 +52,19 @@ async function shortenWithCleanUri(longUrl) {
     });
     const data = await response.json();
     if (data.error) throw new Error(data.error);
-    if (!data.result_url) throw new Error('No URL returned');
+    if (!data.result_url) throw new Error('No URL returned from CleanURI');
     return data.result_url;
 }
 
 export default async function handler(req, res) {
+    // CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key, x-api-token');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
+    // 1. Authenticate
     const queryKey = req.query.apikey;
     const queryToken = req.query.token;
     const headerKey = req.headers['x-api-key'];
@@ -77,6 +82,7 @@ export default async function handler(req, res) {
         });
     }
 
+    // 2. Get URL
     const longUrl = req.query.url;
 
     if (!longUrl) {
@@ -95,6 +101,7 @@ export default async function handler(req, res) {
         });
     }
 
+    // 3. Try Shortening with Fallbacks
     const providers = [
         { name: 'is.gd', fn: () => shortenWithIsGd(longUrl) },
         { name: 'tinyurl', fn: () => shortenWithTinyUrl(longUrl) },
@@ -125,6 +132,7 @@ export default async function handler(req, res) {
         }
     }
 
+    // 4. All providers failed
     return res.status(502).json({
         success: false,
         error: "All shortening providers failed. Please try again later.",
