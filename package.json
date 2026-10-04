@@ -1,0 +1,12 @@
+{
+  "name": "viraj-link-shortener",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fast, free, and reliable link shortener API by Viraj Prajapati",
+  "author": "Viraj Prajapati <https://ethicalviraj.vercel.app/>",
+  "license": "MIT",
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.x"
+  }
+}
